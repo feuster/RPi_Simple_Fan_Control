@@ -1,0 +1,109 @@
+<html>
+<head>
+<meta name="author" content="Alexander feuster">
+<meta name="date" content="2018-12-11T10:00:00+02:00">
+<meta name="description" content="Raspberry Pi: simple fan control">
+<meta name="keywords" content="CONEXUS, Raspberry Pi, fan control, fan, control, fancontrol, bash">
+<title>Raspberry Pi Simple Fan Control Assembly Instructions</title>
+<style>
+body {font-family: Verdana, Arial, Helvetica, sans-serif; font-size:1em; background-color:#FEFEFF; }
+h1 {padding:8px; border:1px solid #000035; border-radius:8px; box-shadow:0 0 10px #000035; background-color:#A0A0FF}
+h2 {padding:6px; border:1px solid #000035; border-radius:8px; box-shadow:0 0 8px #000035; background-color:#FFA0A0}
+h3 {padding:4px; border:1px solid #000035; border-radius:8px; box-shadow:0 0 6px #000035; background-color:#A0FFA0}
+#code {font-family: monospace; font-color:#000000; font-size:1.5em; padding:4px; border:1px solid #000035; border-radius:4px; box-shadow:0 0 5px #000035; background-color:#F0F0F0}
+#atop {text-decoration:none; padding:4px; border:1px solid #000035; border-radius:8px; box-shadow:0 0 6px #000035; background-color:#FFFF80}
+</style></head>
+<body>
+<h1 id="top"><center>Raspberry Pi Simple Fan Control <br>by Alexander Feuster</center></h1>
+<br>
+
+
+<h2>About</h2>
+Newer Raspberry Pi's as the model 3 do heat up more than earlier models. Therefore there are many Raspberry Pi cases available with additional fan and those fans are also sold separately.<br>
+The normal use case is running those fans permanently. To prevent this a temperature controlled solution can be done.<br><br>
+<p align="right"><a href="#top" id="atop">Top</a></p><br><br><br>
+
+
+<h2>License</h2>
+All project related files (binaries, source codes, scripts, graphics etc.) are provided "as-is" without any warranties for any data loss, device defects etc. Use at own risk!<br>
+Free for personal use. Commercial use is prohibited without permission.<br><br>
+<p align="right"><a href="#top" id="atop">Top</a></p><br><br><br>
+
+
+<h2>Content</h2>
+<ul>
+<li><a href="#Prerequisites">Prerequisites</a>
+<li><a href="#Wiring">Wiring</a>
+<li><a href="#script">Temperature control script</a>
+</ul>
+<p align="right"><a href="#top" id="atop">Top</a></p><br><br><br>
+
+
+<h2 id="Prerequisites">Prerequisites</h2>
+For the Raspberry Pi simple fan control assembly there are following prerequisites:
+<ul>
+<li>Raspberry Pi 
+<li>SD card with installed Linux (Raspbian "Stretch" recommended)
+<li>Fan 5V/3.3V with max. 20mA
+</ul>
+<p align="right"><a href="#top" id="atop">Top</a></p><br><br><br>
+
+
+<h2 id="Wiring">Fan wiring</h2>
+Fan wiring ist pretty simple. Attach the black fan cable (Ground / GND) to PIN 6 (Ground / GND) and the red fan cable to PIN 8 (GPIO14).<br>
+Important: since a GPIO has only a allowed maximum current of 20 mA do not use a fan which does need a higher current at 5V/3.3V !<br><br>
+<h3>Fan wiring schemata</h3>
+<center><a href="Wiring.png" target="_blank"><img src="Wiring.png" border="0" width="590" height="794" alt="Raspberry Pi fan wiring schemata"></a></center>
+<p align="right"><a href="#top" id="atop">Top</a></p><br><br><br>
+
+
+<h2 id="script">Temperature control script</h2>
+<br>
+The temperature control is done with a <a href="fan.sh" target="_blank">BASH script</a> which reads out the system temperature value and depending on the threshold level the GPIO will power the fan on or off.<br>
+If a different OS than Raspbian Linux is used there must be probably additional packages installed: "libraspberrypi-bin" (for "vcgencmd") and "wiringpi".<br><br>
+<h3>Script code</h3>
+<p id="code">
+#!/bin/bash
+gpio -g mode 14 out<br>
+while true<br>
+&nbsp;&nbsp;do<br>
+&nbsp;&nbsp;&nbsp;&nbsp;temp=$(vcgencmd measure_temp)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if [ ${temp:5:2} -gt 45 ] ; then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gpio -g write 14 1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gpio -g write 14 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sleep 15<br>
+&nbsp;&nbsp;done<br>
+</p>
+The script is set to a threshold temperature of 45 &deg;C. If another temperature threshold is desired change the value "<font color=red><b>45</b></font>" in line:
+<p id="code">
+&nbsp;&nbsp;&nbsp;&nbsp;if [ ${temp:5:2} -gt <font color=red><b>45</b></font> ] ; then<br>
+</p>
+The script is set to do a temperature check every 15 seconds. If another trigger time is desired change the value "<font color=red><b>15</b></font>" in line:
+<p id="code">
+&nbsp;&nbsp;&nbsp;&nbsp;sleep <font color=red><b>15</b></font><br>
+</p>
+<br>
+<h3>Script installation</h3>
+Copy or create the script <a href="fan.sh" target="_blank">fan.sh</a> in:
+<p id="code">/usr/bin/fan.sh</p>
+and make it executable:
+<p id="code">sudo chmod 755 /usr/bin/fan.sh</p>
+To start the script after every Raspberry Pi boot open a terminal and enter:
+<p id="code">crontab -e</p>
+Now add the following line:
+<p id="code">@reboot /usr/bin/fan.sh</p>
+Save the edited file and close with CTRL+O and CTRL+X.<br>
+After a reboot the script will control the fan according to the desired temperature:
+<p id="code">sudo reboot</p>
+<br><br>
+
+<p align="right"><a href="#top" id="atop">Top</a></p><br><br><br>
+
+
+<h2 id="Github">Copyright & Github</h2><br>
+<h1><center>Raspberry Pi Simple Fan Control<br>by Alexander Feuster<br>Copyright 2018<br><br>Find the latest revision of this document at:<br><a href="https://github.com/feuster/RPi_Simple_Fan_Control" target="_blank">https://github.com/feuster/RPi_Simple_Fan_Control</a></center></h1>
+
+</body>
+</html>
